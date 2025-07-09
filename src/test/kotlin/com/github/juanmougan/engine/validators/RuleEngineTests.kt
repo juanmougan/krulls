@@ -4,41 +4,48 @@ import com.github.juanmougan.engine.api.Action
 import com.github.juanmougan.engine.api.Condition
 import com.github.juanmougan.engine.api.Rule
 import com.github.juanmougan.engine.api.RuleEngine
+import com.github.juanmougan.engine.com.github.juanmougan.engine.processors.RuleProcessor
 import io.github.classgraph.ClassGraph
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.string.shouldContain
+import io.mockk.Runs
+import io.mockk.confirmVerified
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.verify
 
+const val PACKAGE_WITH_CLASSES = "com.github.juanmougan.engine.samples.withclasses"
+
+/**
+ * Sort of hybrid test, since mocking `ClassGraph` seemed a bit complex.
+ */
 class RuleEngineTests : StringSpec({
 
-    "only classes in given package should be scanned" {
-        val scanned = ClassGraph().enableClassInfo().acceptPackages("com.example.rules.testcases")
-            .scan().allClasses.map { it.name }
+    "only classes in given package with the @Rule annotation should be scanned" {
+        // Given a package with classes to scan and others to skip
+        val processor = mockk<RuleProcessor>()
+        val engine = RuleEngine(classGraph = ClassGraph(), rulesProcessor = processor)
+        every { processor.processRule(any()) } just Runs
 
-        assert(scanned.all { it.startsWith("com.example.rules.testcases") })
-    }
+        // When process the rules
+        engine.evaluateRules(PACKAGE_WITH_CLASSES)
 
-    "only classes annotated with @Rule should be picked" {
-        val result = ClassGraph().enableAllInfo().acceptPackages("com.example.rules.testcases").scan()
-
-        val rules = result.getClassesWithAnnotation(Rule::class.qualifiedName)
-        assert(rules.none { it.name.contains("NotARule") })
-    }
-
-    // TODO parametrize these tests, if possible
-    "fail if rule has more than one @Condition" {
-        val engine = RuleEngine()
-        val ex = shouldThrow<IllegalArgumentException> {
-            engine.evaluateRules("com.example.rules.testcases.multipleconditions")
-        }
-        ex.message shouldContain "Only one ${Condition::class.java.simpleName} method is allowed"
-    }
-
-    "fail if rule has more than one @Action" {
-        val engine = RuleEngine()
-        val ex = shouldThrow<IllegalArgumentException> {
-            engine.evaluateRules("com.example.rules.testcases.multipleconditions")
-        }
-        ex.message shouldContain "Only one ${Action::class.java.simpleName} method is allowed"
+        // Then only properly annotated rules are scanned
+        val classToProcess = ValidRule::class.java
+        verify(exactly = 1) { processor.processRule(classToProcess) }
+        confirmVerified(processor)
     }
 })
+
+@Rule
+class ValidRule {
+    @Condition
+    fun validCondition(): Boolean {
+        return true
+    }
+
+    @Action
+    fun validAction() {
+        println("valid action")
+    }
+}
