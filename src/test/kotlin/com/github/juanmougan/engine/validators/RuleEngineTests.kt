@@ -1,10 +1,8 @@
 package com.github.juanmougan.engine.validators
 
-import com.github.juanmougan.engine.api.Action
-import com.github.juanmougan.engine.api.Condition
-import com.github.juanmougan.engine.api.Rule
 import com.github.juanmougan.engine.api.RuleEngine
 import com.github.juanmougan.engine.com.github.juanmougan.engine.processors.RuleProcessor
+import com.github.juanmougan.engine.samples.withclasses.ValidRule
 import io.github.classgraph.ClassGraph
 import io.kotest.core.spec.style.StringSpec
 import io.mockk.Runs
@@ -36,16 +34,3 @@ class RuleEngineTests : StringSpec({
         confirmVerified(processor)
     }
 })
-
-@Rule
-class ValidRule {
-    @Condition
-    fun validCondition(): Boolean {
-        return true
-    }
-
-    @Action
-    fun validAction() {
-        println("valid action")
-    }
-}
