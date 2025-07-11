@@ -14,3 +14,9 @@ fun <T : Annotation> getValidAnnotatedMethodReturningBoolean(clazz: Class<*>, an
         annotation = annotation
     ).also { method -> require(method.returnType == Boolean::class.java) { "Method annotated with ${annotation.simpleName} must return a Boolean value" } }
 }
+
+fun Method.validateCanAccess(instance: Any) {
+    if (!this.canAccess(instance)) {
+        throw IllegalStateException("Can't access method: ${this.name}, please check its visibility")
+    }
+}

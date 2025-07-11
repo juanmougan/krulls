@@ -4,26 +4,27 @@ import com.github.juanmougan.engine.api.Action
 import com.github.juanmougan.engine.api.Condition
 import com.github.juanmougan.engine.com.github.juanmougan.engine.validators.getValidAnnotatedMethod
 import com.github.juanmougan.engine.com.github.juanmougan.engine.validators.getValidAnnotatedMethodReturningBoolean
+import com.github.juanmougan.engine.com.github.juanmougan.engine.validators.validateCanAccess
 
 class RuleProcessor {
-    fun processRule(ruleClass: Class<*>) {
+    fun processRule(ruleClass: Class<*>): Any? {
         val clazzInstance = ruleClass.getDeclaredConstructor().newInstance()
-        val ruleMethod = getValidAnnotatedMethodReturningBoolean(
-            clazz = ruleClass, annotation = Condition::class.java
-        )
+        val conditionMethod =
+            getValidAnnotatedMethodReturningBoolean(
+                clazz = ruleClass,
+                annotation = Condition::class.java,
+            )
         val actionMethod = getValidAnnotatedMethod(clazz = ruleClass, annotation = Action::class.java)
-        // TODO refactor here - this is complex to read
-        if (ruleMethod.canAccess(clazzInstance)) {
-            val ruleEvaluationResult = ruleMethod.invoke(clazzInstance) == true
-            if (ruleEvaluationResult) {
-                if (actionMethod.canAccess(clazzInstance)) {
-                    actionMethod.invoke(clazzInstance)
-                } else {
-                    throw IllegalStateException("Can't access action method: ${actionMethod.name}, please check its visibility")
-                }
-            }
+
+        conditionMethod.validateCanAccess(clazzInstance)
+        actionMethod.validateCanAccess(clazzInstance)
+
+        val ruleEvaluationResult = conditionMethod.invoke(clazzInstance) == true
+        return if (ruleEvaluationResult) {
+            // TODO can I check on runtime that this type matches `actionMethod.genericReturnType`?
+            return actionMethod.invoke(clazzInstance)
         } else {
-            throw IllegalStateException("Can't access condition method: ${ruleMethod.name}, please check its visibility")
+            null
         }
     }
 }
