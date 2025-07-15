@@ -6,22 +6,64 @@
 
   <groupId>com.github.juanmougan.engine</groupId>
   <artifactId>krulls</artifactId>
+  <!-- TODO: non snapshot here for the release -->
   <version>1.0-SNAPSHOT</version>
+  <description>Kotlin library to parse and execute a list of business rules</description>
+  <licenses>
+    <license>
+      <name>The Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Juan Manuel Mougan</name>
+      <email>juanmougan@gmail.com</email>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git@github.com:juanmougan/krulls.git</connection>
+    <developerConnection>scm:git:ssh://github.com:juanmougan/krulls.git</developerConnection>
+    <url>https://github.com/juanmougan/krulls/tree/main</url>
+  </scm>
 
   <name>krulls</name>
-  <!-- FIXME change it to the project's website -->
-  <url>http://www.example.com</url>
+  <url>https://github.com/juanmougan/krulls</url>
 
+  <!-- TODO add missing properties here -->
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>21</java.version>
     <kotlin.version>2.1.21</kotlin.version>
+    <kotlin.junit.version>2.1.21</kotlin.junit.version>
     <classgraph.version>4.8.180</classgraph.version>
-    <kotest.version>6.0.0.M3</kotest.version>
+    <kotest.version>6.0.0.M4</kotest.version>
     <mockk.version>1.14.4</mockk.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
   </properties>
+
+<!--  Annoying way of configuring Kotest + jUnit properly  -->
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>5.10.2</version> <!-- Forces JUnit Platform 1.10.2 -->
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.kotest</groupId>
+        <artifactId>kotest-bom</artifactId>
+        <version>${kotest.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
@@ -46,13 +88,7 @@
     <dependency>
       <groupId>org.jetbrains.kotlin</groupId>
       <artifactId>kotlin-test-junit5</artifactId>
-      <version>${kotlin.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.kotest</groupId>
-      <artifactId>kotest-assertions-core-jvm</artifactId>
-      <version>${kotest.version}</version>
+      <version>${kotlin.junit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -67,6 +103,20 @@
       <version>${mockk.version}</version>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-engine</artifactId>
+      <version>1.10.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-launcher</artifactId>
+      <version>1.10.2</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
